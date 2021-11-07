@@ -10,6 +10,7 @@ import torch.nn.functional as F  # pylint: disable=unused-import
 from torch.utils import tensorboard
 
 import omniglot
+from maml import get_dataloader
 import util  # pylint: disable=unused-import
 
 NUM_INPUT_CHANNELS = 1
@@ -327,7 +328,8 @@ def main(args):
             f'num_support={args.num_support}, '
             f'num_query={args.num_query}'
         )
-        dataloader_train = omniglot.get_omniglot_dataloader(
+        dataloader_train = get_dataloader(
+            args.dataset,
             'train',
             args.batch_size,
             args.num_way,
@@ -335,7 +337,8 @@ def main(args):
             args.num_query,
             num_training_tasks
         )
-        dataloader_val = omniglot.get_omniglot_dataloader(
+        dataloader_val = get_dataloader(
+            args.dataset,
             'val',
             args.batch_size,
             args.num_way,
@@ -355,7 +358,8 @@ def main(args):
             f'num_support={args.num_support}, '
             f'num_query={args.num_query}'
         )
-        dataloader_test = omniglot.get_omniglot_dataloader(
+        dataloader_test = get_dataloader(
+            args.dataset,
             'test',
             1,
             args.num_way,
@@ -370,6 +374,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Train a ProtoNet!')
     parser.add_argument('--log_dir', type=str, default=None,
                         help='directory to save to or load from')
+    parser.add_argument('--dataset', type=str, default='omniglot',
+                        help='dataset to load from, omniglot or quickdraw')
     parser.add_argument('--num_way', type=int, default=5,
                         help='number of classes in a task')
     parser.add_argument('--num_support', type=int, default=1,
@@ -390,7 +396,5 @@ if __name__ == '__main__':
 
     main_args = parser.parse_args()
 
-    for k in [1, 2, 4, 6, 8, 10]:
-        main_args.num_support = k
-        main(main_args)
-    # main(main_args)
+
+    main(main_args)

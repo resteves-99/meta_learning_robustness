@@ -1,4 +1,4 @@
-"""Dataloading for Omniglot."""
+"""Dataloading for Quick Draw."""
 import os
 import glob
 
@@ -9,13 +9,12 @@ from torch.utils.data import dataset, sampler, dataloader
 import imageio
 
 
-NUM_TRAIN_CLASSES = 1100
-NUM_VAL_CLASSES = 100
-NUM_TEST_CLASSES = 423
-NUM_SAMPLES_PER_CLASS = 20
+# total classes = 270
+NUM_TRAIN_CLASSES = 150
+NUM_VAL_CLASSES = 50
+NUM_TEST_CLASSES = 70
 
-
-def load_image(file_path):
+def load_image(file_path, num_images):
     """Loads and transforms an Omniglot image.
 
     Args:
@@ -25,9 +24,10 @@ def load_image(file_path):
         a Tensor containing image data
             shape (1, 28, 28)
     """
-    x = imageio.imread(file_path)
+    x = np.load(file_path)
+    x = x[np.random.choice(range(len(x)), size=num_images)]
     x = torch.tensor(x)
-    x = x.reshape([1, 28, 28])
+    x = x.reshape([num_images, 1, 28, 28])
     x = x.type(torch.float)
     x = x / 255.0
     return 1 - x
@@ -42,8 +42,7 @@ class OmniglotDataset(dataset.Dataset):
     pairs.
     """
 
-    _BASE_PATH = './data/omniglot_resized/'
-    _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
+    _BASE_PATH = './data/quickdraw/'
 
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
@@ -54,27 +53,17 @@ class OmniglotDataset(dataset.Dataset):
         """
         super().__init__()
 
-
-        # if necessary, download the Omniglot dataset
-        if not os.path.isdir(self._BASE_PATH):
-            gdd.GoogleDriveDownloader.download_file_from_google_drive(
-                file_id=self._GDD_FILE_ID,
-                dest_path=f'{self._BASE_PATH}.zip',
-                unzip=True
-            )
-
         # get all character folders
-        self._character_folders = glob.glob(
-            os.path.join(self._BASE_PATH, '*/*/'))
-        assert len(self._character_folders) == (
+        self.all_file_paths = glob.glob(
+            os.path.join(self._BASE_PATH, '*'))
+        assert len(self.all_file_paths) == (
             NUM_TRAIN_CLASSES + NUM_VAL_CLASSES + NUM_TEST_CLASSES
         )
 
         # shuffle characters
-        np.random.default_rng(0).shuffle(self._character_folders)
+        np.random.default_rng(0).shuffle(self.all_file_paths)
 
         # check problem arguments
-        assert num_support + num_query <= NUM_SAMPLES_PER_CLASS
         self._num_support = num_support
         self._num_query = num_query
 
@@ -103,15 +92,8 @@ class OmniglotDataset(dataset.Dataset):
 
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
-            all_file_paths = glob.glob(
-                os.path.join(self._character_folders[class_idx], '*.png')
-            )
-            sampled_file_paths = np.random.default_rng().choice(
-                all_file_paths,
-                size=self._num_support + self._num_query,
-                replace=False
-            )
-            images = [load_image(file_path) for file_path in sampled_file_paths]
+            file_path = self.all_file_paths[class_idx]
+            images = load_image(file_path, self._num_query+self._num_support)
 
             # split sampled examples into support and query
             images_support.extend(images[:self._num_support])
@@ -124,13 +106,12 @@ class OmniglotDataset(dataset.Dataset):
         labels_support = torch.tensor(labels_support)  # shape (N*S)
         images_query = torch.stack(images_query)
         labels_query = torch.tensor(labels_query)
-
         print("B")
 
         return images_support, labels_support, images_query, labels_query
 
 
-class OmniglotSampler(sampler.Sampler):
+class QuickDrawSampler(sampler.Sampler):
     """Samples task specification keys for an OmniglotDataset."""
 
     def __init__(self, split_idxs, num_way, num_tasks):
@@ -143,14 +124,14 @@ class OmniglotSampler(sampler.Sampler):
             num_tasks (int): number of tasks to sample
         """
         super().__init__(None)
-        self._split_idxs = split_idxs
         self._num_way = num_way
         self._num_tasks = num_tasks
+        self.split_idxs = split_idxs
 
     def __iter__(self):
         return (
             np.random.default_rng().choice(
-                self._split_idxs,
+                self.split_idxs,
                 size=self._num_way,
                 replace=False
             ) for _ in range(self._num_tasks)
@@ -164,7 +145,7 @@ def identity(x):
     return x
 
 
-def get_omniglot_dataloader(
+def get_quickdraw_dataloader(
         split,
         batch_size,
         num_way,
@@ -204,9 +185,16 @@ def get_omniglot_dataloader(
     return dataloader.DataLoader(
         dataset=OmniglotDataset(num_support, num_query),
         batch_size=batch_size,
-        sampler=OmniglotSampler(split_idxs, num_way, num_tasks_per_epoch),
+        sampler=QuickDrawSampler(split_idxs, num_way, num_tasks_per_epoch),
         num_workers=2,
         collate_fn=identity,
         pin_memory=torch.cuda.is_available(),
         drop_last=True
     )
+
+if __name__ == '__main__':
+    tmp = np.load('./data/quickdraw/airplane.npy')
+    tmp2 = np.load('./data/quickdraw/axe.npy')
+    # tmp is a list of flattened images
+    print(len(tmp))
+    print(len(tmp2))
