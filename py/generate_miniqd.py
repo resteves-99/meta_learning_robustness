@@ -36,9 +36,9 @@ def generate_subsample(np_path, args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Generate mini_quickdraw')
-    parser.add_argument('--num_samples', type=int, default=100,
+    parser.add_argument('--num_samples', '-ns' , type=int, default=100,
                         help='Num subsamples for each class')
-    parser.add_argument('--overwrite', default=False, action='store_true',
+    parser.add_argument('--overwrite', '-ow', default=False, action='store_true',
                         help='Whether to overwrite existing files')
     parser.add_argument('--verbose', '-v', default=False, action='store_true',
                         help='Whether to print status')
