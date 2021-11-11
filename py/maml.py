@@ -430,6 +430,7 @@ def main(args):
     if log_dir is None:
         log_dir = f'./logs/maml/{args.dataset}.way-{args.num_way}.support-{args.num_support}.query-{args.num_query}.inner_steps-{args.num_inner_steps}.inner_lr-{args.inner_lr}.learn_inner_lrs-{args.learn_inner_lrs}.outer_lr-{args.outer_lr}.batch_size-{args.batch_size}'  # pylint: disable=line-too-long
     print(f'log_dir: {log_dir}')
+    print(f"Using device: {DEVICE}")
     writer = tensorboard.SummaryWriter(log_dir=log_dir)
 
     maml = MAML(

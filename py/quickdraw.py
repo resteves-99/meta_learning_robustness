@@ -6,7 +6,12 @@ import google_drive_downloader as gdd
 import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
+from functools import lru_cache
+import pdb
 
+@lru_cache(maxsize=None)
+def load_npy(file_path):
+    return np.load(file_path)
 
 def load_image_npy(file_path, num_images):
     """Loads and transforms an Omniglot image.
@@ -18,15 +23,15 @@ def load_image_npy(file_path, num_images):
         a Tensor containing image data
             shape (1, 28, 28)
     """
-    x = np.load(file_path)
+    x = load_npy(file_path)
     x = x[np.random.choice(range(len(x)), size=num_images)]
     x = torch.tensor(x)
     x = x.reshape([num_images, 1, 28, 28])
     x = x.type(torch.float)
     x = x / 255.0
-    return 1 - x
+    return x # Note: x is not inverted, so no need for 1 - x
 
-TOTAL_CLASSES = 270
+TOTAL_CLASSES = 345
 class QuickDrawDataset(dataset.Dataset):
     """QuickDraw dataset for meta-learning.
 
@@ -36,7 +41,12 @@ class QuickDrawDataset(dataset.Dataset):
     pairs.
     """
 
-    _BASE_PATH = './data/quickdraw/'
+    _BASE_PATH = './data/mini_quickdraw/'
+
+    # Quickdraw Constants (total classes = 345)
+    NUM_TRAIN_CLASSES = 241
+    NUM_VAL_CLASSES = 52
+    NUM_TEST_CLASSES = 52
 
     def __init__(self, num_support, num_query):
         """Inits QuickDrawDataset.
@@ -80,7 +90,7 @@ class QuickDrawDataset(dataset.Dataset):
         """
         images_support, images_query = [], []
         labels_support, labels_query = [], []
-        print("A")
+        # print("A")
 
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
@@ -98,7 +108,8 @@ class QuickDrawDataset(dataset.Dataset):
         labels_support = torch.tensor(labels_support)  # shape (N*S)
         images_query = torch.stack(images_query)
         labels_query = torch.tensor(labels_query)
-        print("B")
+        
+        # print("B")
 
         return images_support, labels_support, images_query, labels_query
 

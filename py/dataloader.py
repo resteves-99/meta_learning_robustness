@@ -11,16 +11,6 @@ import imageio
 from omniglot import OmniglotDataset
 from quickdraw import QuickDrawDataset
 
-# Omniglot constants
-NUM_TRAIN_CLASSES = 1100
-NUM_VAL_CLASSES = 100
-NUM_TEST_CLASSES = 423
-NUM_SAMPLES_PER_CLASS = 20
-
-# Quickdraw Constants (total classes = 270)
-NUM_TRAIN_CLASSES = 150
-NUM_VAL_CLASSES = 50
-NUM_TEST_CLASSES = 70
 
 class DataSampler(sampler.Sampler):
     """Samples task specification keys for an OmniglotDataset."""
@@ -105,16 +95,19 @@ def get_dataset_dataloader(
     """
 
     if split == 'train':
-        split_idxs = range(NUM_TRAIN_CLASSES)
+        split_idxs = range(dataset.NUM_TRAIN_CLASSES)
     elif split == 'val':
         split_idxs = range(
-            NUM_TRAIN_CLASSES,
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES
+            dataset.NUM_TRAIN_CLASSES,
+            dataset.NUM_TRAIN_CLASSES \
+                + dataset.NUM_VAL_CLASSES
         )
     elif split == 'test':
         split_idxs = range(
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES,
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES + NUM_TEST_CLASSES
+            dataset.NUM_TRAIN_CLASSES + dataset.NUM_VAL_CLASSES,
+            dataset.NUM_TRAIN_CLASSES \
+                + dataset.NUM_VAL_CLASSES \
+                + dataset.NUM_TEST_CLASSES
         )
     else:
         raise ValueError

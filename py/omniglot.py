@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
 import imageio
-
+import pdb
 
 def load_image(file_path):
     """Loads and transforms an Omniglot image.
@@ -39,6 +39,12 @@ class OmniglotDataset(dataset.Dataset):
     _BASE_PATH = './data/omniglot_resized/'
     _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
 
+    # Omniglot constants
+    NUM_TRAIN_CLASSES = 1100
+    NUM_VAL_CLASSES = 100
+    NUM_TEST_CLASSES = 423
+    NUM_SAMPLES_PER_CLASS = 20
+
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
 
@@ -66,7 +72,7 @@ class OmniglotDataset(dataset.Dataset):
         np.random.default_rng(0).shuffle(self._character_folders)
 
         # check problem arguments
-        assert num_support + num_query <= NUM_SAMPLES_PER_CLASS
+        assert num_support + num_query <= self.NUM_SAMPLES_PER_CLASS
         self._num_support = num_support
         self._num_query = num_query
 
@@ -91,7 +97,7 @@ class OmniglotDataset(dataset.Dataset):
         """
         images_support, images_query = [], []
         labels_support, labels_query = [], []
-        print("A")
+        # print("A")
 
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
@@ -117,7 +123,7 @@ class OmniglotDataset(dataset.Dataset):
         images_query = torch.stack(images_query)
         labels_query = torch.tensor(labels_query)
 
-        print("B")
+        # print("B")
 
         return images_support, labels_support, images_query, labels_query
 
