@@ -6,15 +6,9 @@ import google_drive_downloader as gdd
 import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
-import imageio
 
 
-# total classes = 270
-NUM_TRAIN_CLASSES = 150
-NUM_VAL_CLASSES = 50
-NUM_TEST_CLASSES = 70
-
-def load_image(file_path, num_images):
+def load_image_npy(file_path, num_images):
     """Loads and transforms an Omniglot image.
 
     Args:
@@ -33,8 +27,8 @@ def load_image(file_path, num_images):
     return 1 - x
 
 
-class OmniglotDataset(dataset.Dataset):
-    """Omniglot dataset for meta-learning.
+class QuickDrawDataset(dataset.Dataset):
+    """QuickDraw dataset for meta-learning.
 
     Each element of the dataset is a task. A task is specified with a key,
     which is a tuple of class indices (no particular order). The corresponding
@@ -45,7 +39,7 @@ class OmniglotDataset(dataset.Dataset):
     _BASE_PATH = './data/quickdraw/'
 
     def __init__(self, num_support, num_query):
-        """Inits OmniglotDataset.
+        """Inits QuickDrawDataset.
 
         Args:
             num_support (int): number of support examples per class
@@ -93,7 +87,7 @@ class OmniglotDataset(dataset.Dataset):
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
             file_path = self.all_file_paths[class_idx]
-            images = load_image(file_path, self._num_query+self._num_support)
+            images = load_image_npy(file_path, self._num_query+self._num_support)
 
             # split sampled examples into support and query
             images_support.extend(images[:self._num_support])
@@ -111,86 +105,34 @@ class OmniglotDataset(dataset.Dataset):
         return images_support, labels_support, images_query, labels_query
 
 
-class QuickDrawSampler(sampler.Sampler):
-    """Samples task specification keys for an OmniglotDataset."""
+# class QuickDrawSampler(sampler.Sampler):
+#     """Samples task specification keys for an OmniglotDataset."""
 
-    def __init__(self, split_idxs, num_way, num_tasks):
-        """Inits OmniglotSampler.
+#     def __init__(self, split_idxs, num_way, num_tasks):
+#         """Inits QuickDrawSampler.
 
-        Args:
-            split_idxs (range): indices that comprise the
-                training/validation/test split
-            num_way (int): number of classes per task
-            num_tasks (int): number of tasks to sample
-        """
-        super().__init__(None)
-        self._num_way = num_way
-        self._num_tasks = num_tasks
-        self.split_idxs = split_idxs
+#         Args:
+#             split_idxs (range): indices that comprise the
+#                 training/validation/test split
+#             num_way (int): number of classes per task
+#             num_tasks (int): number of tasks to sample
+#         """
+#         super().__init__(None)
+#         self._num_way = num_way
+#         self._num_tasks = num_tasks
+#         self.split_idxs = split_idxs
 
-    def __iter__(self):
-        return (
-            np.random.default_rng().choice(
-                self.split_idxs,
-                size=self._num_way,
-                replace=False
-            ) for _ in range(self._num_tasks)
-        )
+#     def __iter__(self):
+#         return (
+#             np.random.default_rng().choice(
+#                 self.split_idxs,
+#                 size=self._num_way,
+#                 replace=False
+#             ) for _ in range(self._num_tasks)
+#         )
 
-    def __len__(self):
-        return self._num_tasks
-
-
-def identity(x):
-    return x
-
-
-def get_quickdraw_dataloader(
-        split,
-        batch_size,
-        num_way,
-        num_support,
-        num_query,
-        num_tasks_per_epoch
-):
-    """Returns a dataloader.DataLoader for Omniglot.
-
-    Args:
-        split (str): one of 'train', 'val', 'test'
-        batch_size (int): number of tasks per batch
-        num_way (int): number of classes per task
-        num_support (int): number of support examples per class
-        num_query (int): number of query examples per class
-        num_tasks_per_epoch (int): number of tasks before DataLoader is
-            exhausted
-    """
-
-    if split == 'train':
-        split_idxs = range(NUM_TRAIN_CLASSES)
-    elif split == 'val':
-        split_idxs = range(
-            NUM_TRAIN_CLASSES,
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES
-        )
-    elif split == 'test':
-        split_idxs = range(
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES,
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES + NUM_TEST_CLASSES
-        )
-    else:
-        raise ValueError
-
-
-
-    return dataloader.DataLoader(
-        dataset=OmniglotDataset(num_support, num_query),
-        batch_size=batch_size,
-        sampler=QuickDrawSampler(split_idxs, num_way, num_tasks_per_epoch),
-        num_workers=2,
-        collate_fn=identity,
-        pin_memory=torch.cuda.is_available(),
-        drop_last=True
-    )
+#     def __len__(self):
+#         return self._num_tasks
 
 if __name__ == '__main__':
     tmp = np.load('./data/quickdraw/airplane.npy')
