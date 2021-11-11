@@ -9,12 +9,6 @@ from torch.utils.data import dataset, sampler, dataloader
 import imageio
 
 
-NUM_TRAIN_CLASSES = 1100
-NUM_VAL_CLASSES = 100
-NUM_TEST_CLASSES = 423
-NUM_SAMPLES_PER_CLASS = 20
-
-
 def load_image(file_path):
     """Loads and transforms an Omniglot image.
 
@@ -32,7 +26,7 @@ def load_image(file_path):
     x = x / 255.0
     return 1 - x
 
-
+TOTAL_CLASSES = 1623
 class OmniglotDataset(dataset.Dataset):
     """Omniglot dataset for meta-learning.
 
@@ -66,9 +60,7 @@ class OmniglotDataset(dataset.Dataset):
         # get all character folders
         self._character_folders = glob.glob(
             os.path.join(self._BASE_PATH, '*/*/'))
-        assert len(self._character_folders) == (
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES + NUM_TEST_CLASSES
-        )
+        assert len(self._character_folders) == TOTAL_CLASSES
 
         # shuffle characters
         np.random.default_rng(0).shuffle(self._character_folders)

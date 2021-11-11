@@ -10,8 +10,7 @@ import torch.nn.functional as F
 from torch import autograd  # pylint: disable=unused-import
 from torch.utils import tensorboard
 
-import omniglot
-import quickdraw
+from dataloader import get_dataloader
 import util  # pylint: disable=unused-import
 
 NUM_INPUT_CHANNELS = 1
@@ -463,7 +462,8 @@ def main(args):
             args.num_way,
             args.num_support,
             args.num_query,
-            num_training_tasks
+            num_training_tasks,
+            args.num_workers
         )
         dataloader_val = get_dataloader(
             args.dataset,
@@ -472,7 +472,8 @@ def main(args):
             args.num_way,
             args.num_support,
             args.num_query,
-            args.batch_size * 4
+            args.batch_size * 4,
+            args.num_workers
         )
         maml.train(
             dataloader_train,
@@ -493,7 +494,8 @@ def main(args):
             args.num_way,
             args.num_support,
             args.num_query,
-            NUM_TEST_TASKS
+            NUM_TEST_TASKS,
+            args.num_workers
         )
         maml.test(dataloader_test)
 
@@ -504,6 +506,8 @@ if __name__ == '__main__':
                         help='directory to save to or load from')
     parser.add_argument('--dataset', type=str, default='omniglot',
                         help='dataset to load from, omniglot or quickdraw')
+    parser.add_argument('--num_workers', type=int, default=4,
+                        help='number of CPU workers for dataloading')
     parser.add_argument('--num_way', type=int, default=5,
                         help='number of classes in a task')
     parser.add_argument('--num_support', type=int, default=1,

@@ -26,7 +26,7 @@ def load_image_npy(file_path, num_images):
     x = x / 255.0
     return 1 - x
 
-
+TOTAL_CLASSES = 270
 class QuickDrawDataset(dataset.Dataset):
     """QuickDraw dataset for meta-learning.
 
@@ -50,9 +50,7 @@ class QuickDrawDataset(dataset.Dataset):
         # get all character folders
         self.all_file_paths = glob.glob(
             os.path.join(self._BASE_PATH, '*'))
-        assert len(self.all_file_paths) == (
-            NUM_TRAIN_CLASSES + NUM_VAL_CLASSES + NUM_TEST_CLASSES
-        )
+        assert len(self.all_file_paths) == TOTAL_CLASSES
 
         # shuffle characters
         np.random.default_rng(0).shuffle(self.all_file_paths)
