@@ -31,3 +31,5 @@ Make fungi directory
 Download train and validation images
 
 Unzip file
+
+Run the py/flowers.py file to process the data
