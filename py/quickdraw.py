@@ -41,7 +41,7 @@ class QuickDrawDataset(dataset.Dataset):
     pairs.
     """
 
-    _BASE_PATH = './data/mini_quickdraw/'
+    _BASE_PATH = '../data/mini_quickdraw/'
 
     # Quickdraw Constants (total classes = 345)
     NUM_TRAIN_CLASSES = 241

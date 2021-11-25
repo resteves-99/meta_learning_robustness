@@ -36,7 +36,7 @@ class OmniglotDataset(dataset.Dataset):
     pairs.
     """
 
-    _BASE_PATH = './data/omniglot_resized/'
+    _BASE_PATH = '../data/omniglot_resized/'
     _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
 
     # Omniglot constants
