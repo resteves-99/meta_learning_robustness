@@ -10,6 +10,8 @@ import imageio
 
 from omniglot import OmniglotDataset
 from quickdraw import QuickDrawDataset
+from fungi import FungiDataset
+from flowers import FlowersDataset
 
 
 class DataSampler(sampler.Sampler):
@@ -59,6 +61,10 @@ def get_dataloader(
             use_dataset = OmniglotDataset
         elif dataset == "quickdraw":
             use_dataset = QuickDrawDataset
+        elif dataset == "fungi":
+            use_dataset = FungiDataset
+        elif dataset == "flowers":
+            use_dataset = FlowersDataset
 
         return get_dataset_dataloader(
                 split,
