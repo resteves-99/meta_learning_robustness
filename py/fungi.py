@@ -36,7 +36,7 @@ class FungiDataset(dataset.Dataset):
     pairs.
     """
 
-    _BASE_PATH = '../data/fungi/images/'
+    _BASE_PATH = './data/fungi/images/'
     _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
 
     # Fungi constants
