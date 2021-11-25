@@ -1,4 +1,3 @@
-data/quickdraw
-data/mini_quickdraw
+data
 py/__pycache__/
 logs
