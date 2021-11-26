@@ -6,6 +6,7 @@ google-auth==1.35.0
 google-auth-oauthlib==0.4.6
 googledrivedownloader==0.4
 grpcio==1.40.0
+scipy
 idna==3.2
 importlib-metadata==4.8.1
 Markdown==3.3.4
