@@ -1,5 +1,5 @@
 import scipy.io
-import pandas as pd
+import numpy as np
 import os
 
 def rearrange_folders():
@@ -7,7 +7,7 @@ def rearrange_folders():
     mat = scipy.io.loadmat('./data/flowers/imagelabels.mat')
     flower_labels = mat["labels"].tolist()
     flower_labels = flower_labels[0]
-    unique_labels = pd.unique(flower_labels).tolist()
+    unique_labels = np.unique(flower_labels).tolist()
 
     # create directories
     flower_path = './data/flowers/chars/'
