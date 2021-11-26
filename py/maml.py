@@ -513,7 +513,7 @@ if __name__ == '__main__':
                         help='number of classes in a task')
     parser.add_argument('--num_support', type=int, default=1,
                         help='number of support examples per class in a task')
-    parser.add_argument('--num_query', type=int, default=15,
+    parser.add_argument('--num_query', type=int, default=10,
                         help='number of query examples per class in a task')
     parser.add_argument('--num_inner_steps', type=int, default=1,
                         help='number of inner-loop updates')

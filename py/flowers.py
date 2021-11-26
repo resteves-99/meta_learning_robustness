@@ -33,7 +33,7 @@ def load_image(file_path):
     max_size = 1000 # estimate, might need to be higher
     pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
     pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
-    x = torch.nn.funcional.pad(x, pad_input)
+    x = torch.nn.functional.pad(x, pad_input)
     return x
 
 TOTAL_CLASSES = 102
@@ -106,7 +106,6 @@ class FlowersDataset(dataset.Dataset):
             all_file_paths = glob.glob(
                 os.path.join(self._character_folders[class_idx], '*.jpg')
             )
-            print(all_file_paths)
             sampled_file_paths = np.random.default_rng().choice(
                 all_file_paths,
                 size=self._num_support + self._num_query,

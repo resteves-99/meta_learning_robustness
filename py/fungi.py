@@ -31,7 +31,7 @@ def load_image(file_path):
     max_size = 1200 # estimate, might need to be higher
     pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
     pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
-    x = torch.nn.funcional.pad(x, pad_input)
+    x = torch.nn.functional.pad(x, pad_input)
     return x
 
 
@@ -55,7 +55,7 @@ class FungiDataset(dataset.Dataset):
     NUM_TRAIN_CLASSES = 800
     NUM_VAL_CLASSES = 200
     NUM_TEST_CLASSES = 394
-    NUM_SAMPLES_PER_CLASS = 20  # probably more than this
+    NUM_SAMPLES_PER_CLASS = 15  # probably more than this
 
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
