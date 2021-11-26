@@ -22,8 +22,11 @@ def load_image(file_path):
             shape (3, variable, 500)
     """
     x = imageio.imread(file_path)
+    # W, H, C
     x = torch.tensor(x)
+    x = x.transpose(2, 0)
     # x = x.reshape([3, -1, 500])
+    print(x.shape)
     x = x.type(torch.float)
     x = x / 255.0
     return 1 - x
@@ -46,7 +49,7 @@ class FlowersDataset(dataset.Dataset):
     NUM_TRAIN_CLASSES = 62
     NUM_VAL_CLASSES = 20
     NUM_TEST_CLASSES = 20
-    NUM_SAMPLES_PER_CLASS = 20 # probably more than this
+    NUM_SAMPLES_PER_CLASS = 40 # probably more than this
 
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
@@ -96,8 +99,9 @@ class FlowersDataset(dataset.Dataset):
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
             all_file_paths = glob.glob(
-                os.path.join(self._character_folders[class_idx], '*.JPG')
+                os.path.join(self._character_folders[class_idx], '*.jpg')
             )
+            print(all_file_paths)
             sampled_file_paths = np.random.default_rng().choice(
                 all_file_paths,
                 size=self._num_support + self._num_query,

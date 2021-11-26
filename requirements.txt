@@ -9,6 +9,7 @@ grpcio==1.40.0
 scipy
 idna==3.2
 importlib-metadata==4.8.1
+imageio
 Markdown==3.3.4
 numpy==1.21.2
 oauthlib==3.1.1
