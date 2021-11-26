@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import dataset, sampler, dataloader
 import imageio
 import pdb
+from math import floor, ceil
 
 def load_image(file_path):
     """Loads and transforms an Fungi image.
@@ -25,11 +26,15 @@ def load_image(file_path):
     # W, H, C
     x = torch.tensor(x)
     x = x.transpose(2, 0)
-    # x = x.reshape([3, -1, 500])
-    print(x.shape)
     x = x.type(torch.float)
     x = x / 255.0
-    return 1 - x
+    x = 1 - x
+
+    max_size = 1000 # estimate, might need to be higher
+    pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
+    pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
+    x = torch.nn.funcional.pad(x, pad_input)
+    return x
 
 TOTAL_CLASSES = 102
 class FlowersDataset(dataset.Dataset):

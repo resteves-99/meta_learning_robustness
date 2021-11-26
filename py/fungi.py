@@ -2,12 +2,13 @@
 import os
 import glob
 
-import google_drive_downloader as gdd
 import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
 import imageio
+from math import floor, ceil
 import pdb
+
 
 def load_image(file_path):
     """Loads and transforms an Fungi image.
@@ -17,16 +18,26 @@ def load_image(file_path):
 
     Returns:
         a Tensor containing image data
-            shape (3, 1024, 768)
+            shape (3, variable, variable)
     """
     x = imageio.imread(file_path)
+    # W, H, C
     x = torch.tensor(x)
-    x = x.reshape([3, 1024, 768])
+    x = x.transpose(2, 0)
     x = x.type(torch.float)
     x = x / 255.0
-    return 1 - x
+    x = 1 - x
+
+    max_size = 1200 # estimate, might need to be higher
+    pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
+    pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
+    x = torch.nn.funcional.pad(x, pad_input)
+    return x
+
 
 TOTAL_CLASSES = 1394
+
+
 class FungiDataset(dataset.Dataset):
     """Fungi dataset for meta-learning.
 
@@ -44,7 +55,7 @@ class FungiDataset(dataset.Dataset):
     NUM_TRAIN_CLASSES = 800
     NUM_VAL_CLASSES = 200
     NUM_TEST_CLASSES = 394
-    NUM_SAMPLES_PER_CLASS = 20 # probably more than this
+    NUM_SAMPLES_PER_CLASS = 20  # probably more than this
 
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
@@ -54,15 +65,6 @@ class FungiDataset(dataset.Dataset):
             num_query (int): number of query examples per class
         """
         super().__init__()
-
-
-        # if necessary, download the Omniglot dataset
-        if not os.path.isdir(self._BASE_PATH):
-            gdd.GoogleDriveDownloader.download_file_from_google_drive(
-                file_id=self._GDD_FILE_ID,
-                dest_path=f'{self._BASE_PATH}.zip',
-                unzip=True
-            )
 
         # get all character folders
         self._character_folders = glob.glob(
@@ -98,7 +100,6 @@ class FungiDataset(dataset.Dataset):
         """
         images_support, images_query = [], []
         labels_support, labels_query = [], []
-        # print("A")
 
         for label, class_idx in enumerate(class_idxs):
             # get a class's examples and sample from them
@@ -124,36 +125,4 @@ class FungiDataset(dataset.Dataset):
         images_query = torch.stack(images_query)
         labels_query = torch.tensor(labels_query)
 
-        # print("B")
-
         return images_support, labels_support, images_query, labels_query
-
-
-# class OmniglotSampler(sampler.Sampler):
-#     """Samples task specification keys for an OmniglotDataset."""
-
-#     def __init__(self, split_idxs, num_way, num_tasks):
-#         """Inits OmniglotSampler.
-
-#         Args:
-#             split_idxs (range): indices that comprise the
-#                 training/validation/test split
-#             num_way (int): number of classes per task
-#             num_tasks (int): number of tasks to sample
-#         """
-#         super().__init__(None)
-#         self._split_idxs = split_idxs
-#         self._num_way = num_way
-#         self._num_tasks = num_tasks
-
-#     def __iter__(self):
-#         return (
-#             np.random.default_rng().choice(
-#                 self._split_idxs,
-#                 size=self._num_way,
-#                 replace=False
-#             ) for _ in range(self._num_tasks)
-#         )
-
-#     def __len__(self):
-#         return self._num_tasks
