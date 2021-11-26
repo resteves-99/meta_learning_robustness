@@ -20,10 +20,9 @@ def rearrange_folders():
             os.mkdir(curr_path)
 
     # fill directories
-    jpg_path = './data/flowers/jpg/'
+    jpg_path = './data/flowers/images/'
     all_paths = os.listdir(jpg_path)
     all_paths.sort()
-    print(all_paths)
     for idx in range(len(all_paths)):
         curr_img_name = all_paths[idx]
         curr_img_path = jpg_path + curr_img_name
@@ -36,9 +35,3 @@ def rearrange_folders():
 if __name__ == '__main__':
     rearrange_folders()
 
-
-
-
-
-
-    print(mat)

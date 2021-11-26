@@ -24,6 +24,7 @@ Download 102 category dataset, image labels, and data splits
 
 Unzip file
 
+Run the py/flowers.py file to process the data
 
 ### Fungi
 Make fungi directory
@@ -31,5 +32,3 @@ Make fungi directory
 Download train and validation images
 
 Unzip file
-
-Run the py/flowers.py file to process the data
