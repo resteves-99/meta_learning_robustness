@@ -7,8 +7,15 @@ import torch
 from torch.utils.data import dataset, sampler, dataloader
 import imageio
 from math import floor, ceil
+import torchvision.transforms as transforms
 import pdb
 
+img_dim = 224
+div_fac = 8
+fungi_transform = transforms.Compose([
+    transforms.Resize(256//div_fac),
+    transforms.CenterCrop(img_dim//div_fac),
+])
 
 def load_image(file_path):
     """Loads and transforms an Fungi image.
@@ -20,18 +27,22 @@ def load_image(file_path):
         a Tensor containing image data
             shape (3, variable, variable)
     """
-    x = imageio.imread(file_path)
+    try:
+        x = imageio.imread(file_path)
+    except ValueError: 
+        print(file_path)
+        pdb.set_trace()
+    
     # W, H, C
-    x = torch.tensor(x)
+    try:
+        x = torch.tensor(x)
+    except ValueError:
+        x = torch.tensor(x.copy())
     x = x.transpose(2, 0)
     x = x.type(torch.float)
+    x = fungi_transform(x)
     x = x / 255.0
-    x = 1 - x
 
-    max_size = 1200 # estimate, might need to be higher
-    pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
-    pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
-    x = torch.nn.functional.pad(x, pad_input)
     return x
 
 
@@ -48,14 +59,13 @@ class FungiDataset(dataset.Dataset):
     """
 
     _BASE_PATH = './data/fungi/images/'
-    _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
 
     # Fungi constants
     # 1394 total classes
     NUM_TRAIN_CLASSES = 800
     NUM_VAL_CLASSES = 200
     NUM_TEST_CLASSES = 394
-    NUM_SAMPLES_PER_CLASS = 15  # probably more than this
+    NUM_SAMPLES_PER_CLASS = 16  # probably more than this
 
     def __init__(self, num_support, num_query):
         """Inits OmniglotDataset.
@@ -106,11 +116,17 @@ class FungiDataset(dataset.Dataset):
             all_file_paths = glob.glob(
                 os.path.join(self._character_folders[class_idx], '*.JPG')
             )
-            sampled_file_paths = np.random.default_rng().choice(
-                all_file_paths,
-                size=self._num_support + self._num_query,
-                replace=False
-            )
+            try:
+                sampled_file_paths = np.random.default_rng().choice(
+                    all_file_paths,
+                    size=self._num_support + self._num_query,
+                    replace=False
+                )
+            except ValueError:
+                print(len(all_file_paths))
+                print(all_file_paths)
+                print(self._num_support + self._num_query)
+                exit()
             images = [load_image(file_path) for file_path in sampled_file_paths]
 
             # split sampled examples into support and query
@@ -126,3 +142,21 @@ class FungiDataset(dataset.Dataset):
         labels_query = torch.tensor(labels_query)
 
         return images_support, labels_support, images_query, labels_query
+
+def clean_bad_images():
+    from tqdm import tqdm
+    _BASE_PATH = './data/fungi/images/'
+    jpg_files = glob.glob(os.path.join(_BASE_PATH, '*/*.JPG'))
+    for jpg_path in tqdm(jpg_files):
+        
+        try:
+            _ = imageio.imread(jpg_path)
+        except ValueError: 
+            print(f"bad file {jpg_path}")
+            new_path = jpg_path + "_BAD"
+            os.rename(jpg_path, new_path)
+            # new_path = jpg_path.replace("images", "bad_images")
+
+    
+if __name__ == "__main__":
+    clean_bad_images()
