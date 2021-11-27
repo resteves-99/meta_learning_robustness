@@ -4,13 +4,20 @@ import os
 import os
 import glob
 
-import google_drive_downloader as gdd
 import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
 import imageio
 import pdb
+import torchvision.transforms as transforms
 from math import floor, ceil
+
+img_dim = 224
+div_fac = 8
+flowers_transform = transforms.Compose([
+    transforms.Resize(256//div_fac),
+    transforms.CenterCrop(img_dim//div_fac),
+])
 
 def load_image(file_path):
     """Loads and transforms an Fungi image.
@@ -27,13 +34,9 @@ def load_image(file_path):
     x = torch.tensor(x)
     x = x.transpose(2, 0)
     x = x.type(torch.float)
+    x = flowers_transform(x)
     x = x / 255.0
-    x = 1 - x
 
-    max_size = 1000 # estimate, might need to be higher
-    pad_height, pad_width = max_size-x.shape[1], max_size-x.shape[2]
-    pad_input = (floor(pad_width/2), ceil(pad_width/2), floor(pad_height/2), ceil(pad_height/2))
-    x = torch.nn.functional.pad(x, pad_input)
     return x
 
 TOTAL_CLASSES = 102
@@ -47,7 +50,6 @@ class FlowersDataset(dataset.Dataset):
     """
 
     _BASE_PATH = './data/flowers/chars/'
-    _GDD_FILE_ID = '1iaSFXIYC3AB8q9K_M-oVMa4pmB7yKMtI'
 
     # Fungi constants
     # 102 total classes
@@ -146,7 +148,7 @@ def rearrange_folders():
             os.mkdir(curr_path)
 
     # fill directories
-    jpg_path = './data/flowers/images/'
+    jpg_path = './data/flowers/jpg/'
     all_paths = os.listdir(jpg_path)
     all_paths.sort()
     for idx in range(len(all_paths)):

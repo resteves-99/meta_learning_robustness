@@ -13,14 +13,15 @@ from torch.utils import tensorboard
 from dataloader import get_dataloader
 import util  # pylint: disable=unused-import
 
-NUM_INPUT_CHANNELS = 1
-NUM_HIDDEN_CHANNELS = 64
+# NUM_INPUT_CHANNELS = 1
+NUM_HIDDEN_CHANNELS = -1 # 64
 KERNEL_SIZE = 3
 NUM_CONV_LAYERS = 4
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 SUMMARY_INTERVAL = 10
 SAVE_INTERVAL = 100
 LOG_INTERVAL = 10
+CLEAR_CACHE_INTERVAL = 1
 VAL_INTERVAL = LOG_INTERVAL * 5
 NUM_TEST_TASKS = 600
 
@@ -30,6 +31,8 @@ class MAML:
 
     def __init__(
             self,
+            num_input_channel,
+            num_hidden_channel,
             num_outputs,
             num_inner_steps,
             inner_lr,
@@ -62,11 +65,11 @@ class MAML:
         meta_parameters = {}
 
         # construct feature extractor
-        in_channels = NUM_INPUT_CHANNELS
+        in_channels = num_input_channel
         for i in range(NUM_CONV_LAYERS):
             meta_parameters[f'conv{i}'] = nn.init.xavier_uniform_(
                 torch.empty(
-                    NUM_HIDDEN_CHANNELS,
+                    num_hidden_channel,
                     in_channels,
                     KERNEL_SIZE,
                     KERNEL_SIZE,
@@ -76,18 +79,18 @@ class MAML:
             )
             meta_parameters[f'b{i}'] = nn.init.zeros_(
                 torch.empty(
-                    NUM_HIDDEN_CHANNELS,
+                    num_hidden_channel,
                     requires_grad=True,
                     device=DEVICE
                 )
             )
-            in_channels = NUM_HIDDEN_CHANNELS
+            in_channels = num_hidden_channel
 
         # construct linear head layer
         meta_parameters[f'w{NUM_CONV_LAYERS}'] = nn.init.xavier_uniform_(
             torch.empty(
                 num_outputs,
-                NUM_HIDDEN_CHANNELS,
+                num_hidden_channel,
                 requires_grad=True,
                 device=DEVICE
             )
@@ -283,6 +286,10 @@ class MAML:
             outer_loss.backward()
             self._optimizer.step()
 
+            if i_step % CLEAR_CACHE_INTERVAL == 0:
+                # torch.cuda.empty_cache()
+                pass
+
             if i_step % LOG_INTERVAL == 0:
                 print(
                     f'Iteration {i_step}: '
@@ -434,6 +441,8 @@ def main(args):
     writer = tensorboard.SummaryWriter(log_dir=log_dir)
 
     maml = MAML(
+        util.get_num_input_channels(args),
+        util.get_num_hidden_channels(args),
         args.num_way,
         args.num_inner_steps,
         args.inner_lr,
@@ -506,14 +515,14 @@ if __name__ == '__main__':
     parser.add_argument('--log_dir', type=str, default=None,
                         help='directory to save to or load from')
     parser.add_argument('--dataset', type=str, default='omniglot',
-                        help='dataset to load from, omniglot or quickdraw')
+                        help='dataset to load from: omniglot, quickdraw, flowers, or fungi')
     parser.add_argument('--num_workers', type=int, default=4,
                         help='number of CPU workers for dataloading')
     parser.add_argument('--num_way', type=int, default=5,
                         help='number of classes in a task')
     parser.add_argument('--num_support', type=int, default=1,
                         help='number of support examples per class in a task')
-    parser.add_argument('--num_query', type=int, default=10,
+    parser.add_argument('--num_query', type=int, default=15,
                         help='number of query examples per class in a task')
     parser.add_argument('--num_inner_steps', type=int, default=1,
                         help='number of inner-loop updates')

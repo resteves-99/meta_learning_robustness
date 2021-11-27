@@ -2,11 +2,9 @@
 import os
 import glob
 
-import google_drive_downloader as gdd
 import numpy as np
 import torch
 from torch.utils.data import dataset, sampler, dataloader
-import imageio
 
 from omniglot import OmniglotDataset
 from quickdraw import QuickDrawDataset

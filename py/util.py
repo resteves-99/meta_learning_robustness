@@ -2,6 +2,17 @@
 import torch
 
 
+def get_num_input_channels(args):
+    if args.dataset in ('fungi', 'flowers'):
+        return 3
+    return 1
+
+def get_num_hidden_channels(args):
+    if args.dataset in ('fungi', 'flowers'):
+        return 64 #32
+    return 64
+
+
 def score(logits, labels):
     """Returns the mean accuracy of a model's predictions on a set of examples.
 

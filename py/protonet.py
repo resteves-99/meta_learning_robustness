@@ -378,7 +378,7 @@ if __name__ == '__main__':
     parser.add_argument('--log_dir', type=str, default=None,
                         help='directory to save to or load from')
     parser.add_argument('--dataset', type=str, default='omniglot',
-                        help='dataset to load from, omniglot or quickdraw')
+                        help='dataset to load from: omniglot, quickdraw, flowers, or fungi')
     parser.add_argument('--num_workers', type=int, default=4,
                         help='number of CPU workers for dataloading')
     parser.add_argument('--num_way', type=int, default=5,
