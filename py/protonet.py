@@ -27,7 +27,7 @@ NUM_TEST_TASKS = 600
 class ProtoNetNetwork(nn.Module):
     """Container for ProtoNet weights and image-to-latent computation."""
 
-    def __init__(self):
+    def __init__(self, num_input_channel, num_hidden_channel):
         """Inits ProtoNetNetwork.
 
         The network consists of four convolutional blocks, each comprising a
@@ -42,21 +42,21 @@ class ProtoNetNetwork(nn.Module):
         """
         super().__init__()
         layers = []
-        in_channels = NUM_INPUT_CHANNELS
+        in_channels = num_input_channel
         for _ in range(NUM_CONV_LAYERS):
             layers.append(
                 nn.Conv2d(
                     in_channels,
-                    NUM_HIDDEN_CHANNELS,
+                    num_hidden_channel,
                     (KERNEL_SIZE, KERNEL_SIZE),
                     padding=1,
                     # padding='same'
                 )
             )
-            layers.append(nn.BatchNorm2d(NUM_HIDDEN_CHANNELS))
+            layers.append(nn.BatchNorm2d(num_hidden_channel))
             layers.append(nn.ReLU())
             layers.append(nn.MaxPool2d(2))
-            in_channels = NUM_HIDDEN_CHANNELS
+            in_channels = num_hidden_channel
         layers.append(nn.Flatten())
         self._layers = nn.Sequential(*layers)
         self.to(DEVICE)
@@ -78,7 +78,7 @@ class ProtoNetNetwork(nn.Module):
 class ProtoNet:
     """Trains and assesses a prototypical network."""
 
-    def __init__(self, learning_rate, log_dir):
+    def __init__(self, num_input_channel, num_hidden_channel, learning_rate, log_dir):
         """Inits ProtoNet.
 
         Args:
@@ -86,7 +86,10 @@ class ProtoNet:
             log_dir (str): path to logging directory
         """
 
-        self._network = ProtoNetNetwork()
+        self._network = ProtoNetNetwork(
+            num_input_channel,
+            num_hidden_channel
+        )
         self._optimizer = torch.optim.Adam(
             self._network.parameters(),
             lr=learning_rate
@@ -312,7 +315,11 @@ def main(args):
     print(f"Using device: {DEVICE}")
     writer = tensorboard.SummaryWriter(log_dir=log_dir)
 
-    protonet = ProtoNet(args.learning_rate, log_dir)
+    protonet = ProtoNet(
+        util.get_num_input_channels(args),
+        util.get_num_hidden_channels(args),
+        args.learning_rate,
+        log_dir)
 
     if args.checkpoint_step > -1:
         protonet.load(args.checkpoint_step)
