@@ -19,6 +19,7 @@ def load_image(file_path, repeat=False):
         a Tensor containing image data
             shape (1, 28, 28)
     """
+    # Not the best idea to do augmentation on this because images are already 28x28. Start with fungi or smth
     x = imageio.imread(file_path)
     x = torch.tensor(x)
     x = x.reshape([1, 28, 28])

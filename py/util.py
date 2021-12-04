@@ -3,7 +3,7 @@ import torch
 
 
 def get_num_input_channels(args):
-    if args.dataset in ('fungi', 'flowers'):
+    if args.dataset in ('fungi', 'flowers', 'flowers_unsup', 'fungi_unsup'):
         return 3
     return 1
 

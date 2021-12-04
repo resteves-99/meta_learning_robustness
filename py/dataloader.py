@@ -10,7 +10,8 @@ from omniglot import OmniglotDataset
 from quickdraw import QuickDrawDataset
 from fungi import FungiDataset
 from flowers import FlowersDataset
-
+from flowers_unsup import FlowersDatasetUnsup
+from fungi_unsup import FungiDatasetUnsup
 
 class DataSampler(sampler.Sampler):
     """Samples task specification keys for an OmniglotDataset."""
@@ -63,6 +64,20 @@ def get_dataloader(
             use_dataset = FungiDataset
         elif dataset == "flowers":
             use_dataset = FlowersDataset
+        elif dataset == "flowers_unsup":
+            if split == "train":
+                use_dataset = FlowersDatasetUnsup
+            else:
+                use_dataset = FlowersDataset
+                num_support = 1
+        elif dataset == "fungi_unsup":
+            if split == "train":
+                use_dataset = FungiDatasetUnsup
+            else:
+                use_dataset = FungiDataset
+                num_support = 1
+                num_query = 5
+        
 
         return get_dataset_dataloader(
                 split,
@@ -127,3 +142,4 @@ def get_dataset_dataloader(
         pin_memory=torch.cuda.is_available(),
         drop_last=True
     )
+
