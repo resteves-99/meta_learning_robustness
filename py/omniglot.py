@@ -9,7 +9,7 @@ from torch.utils.data import dataset, sampler, dataloader
 import imageio
 import pdb
 
-def load_image(file_path):
+def load_image(file_path, repeat=False):
     """Loads and transforms an Omniglot image.
 
     Args:
@@ -24,6 +24,9 @@ def load_image(file_path):
     x = x.reshape([1, 28, 28])
     x = x.type(torch.float)
     x = x / 255.0
+
+    if repeat: x = x.expand(3, -1, -1)
+
     return 1 - x
 
 TOTAL_CLASSES = 1623

@@ -13,7 +13,7 @@ import pdb
 def load_npy(file_path):
     return np.load(file_path)
 
-def load_image_npy(file_path, num_images):
+def load_image_npy(file_path, num_images, repeat=False):
     """Loads and transforms an Omniglot image.
 
     Args:
@@ -29,6 +29,8 @@ def load_image_npy(file_path, num_images):
     x = x.reshape([num_images, 1, 28, 28])
     x = x.type(torch.float)
     x = x / 255.0
+
+    if repeat: x = x.expand(-1, 3, -1, -1)
     return x # Note: x is not inverted, so no need for 1 - x
 
 TOTAL_CLASSES = 345
