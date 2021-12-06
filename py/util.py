@@ -3,9 +3,9 @@ import torch
 
 
 def get_num_input_channels(args):
-    if args.dataset in ('fungi', 'flowers', 'flowers_unsup', 'fungi_unsup'):
-        return 3
-    return 1
+    if args.dataset in ('omniglot', "quickdraw"):
+        return 1
+    return 3
 
 def get_num_hidden_channels(args):
     if args.dataset in ('fungi', 'flowers'):
