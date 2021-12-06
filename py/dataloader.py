@@ -12,6 +12,7 @@ from fungi import FungiDataset
 from flowers import FlowersDataset
 from flowers_unsup import FlowersDatasetUnsup
 from fungi_unsup import FungiDatasetUnsup
+from flowers_fungi_combo import FungiFlowersUnsupDataset, FlowersFungiUnsupDataset
 
 class DataSampler(sampler.Sampler):
     """Samples task specification keys for an OmniglotDataset."""
@@ -73,6 +74,20 @@ def get_dataloader(
         elif dataset == "fungi_unsup":
             if split == "train":
                 use_dataset = FungiDatasetUnsup
+            else:
+                use_dataset = FungiDataset
+                num_support = 1
+                num_query = 5
+        # not the best coding but its okay
+        elif dataset == "fungi+flowers_unsup":
+            if split == "train":
+                use_dataset = FungiFlowersUnsupDataset
+            else:
+                use_dataset = FlowersDataset
+                num_support = 1
+        elif dataset == "flowers+fungi_unsup":
+            if split == "train":
+                use_dataset = FlowersFungiUnsupDataset
             else:
                 use_dataset = FungiDataset
                 num_support = 1
