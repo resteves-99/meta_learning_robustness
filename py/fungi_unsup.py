@@ -12,7 +12,7 @@ import pdb
 
 img_dim = 224
 div_fac = 8
-flowers_transform_augmented = transforms.Compose([
+fungi_transform_augmented = transforms.Compose([
     transforms.RandomResizedCrop(img_dim//div_fac),
     transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
     transforms.RandomGrayscale(p=0.1),
@@ -20,7 +20,7 @@ flowers_transform_augmented = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-def load_image(file_path):
+def load_image(file_path, num_augs=1):
     """Loads and transforms an Fungi image.
 
     Args:
@@ -43,10 +43,10 @@ def load_image(file_path):
         x = torch.tensor(x.copy())
     x = x.transpose(2, 0)
     x = x.type(torch.float)
-    x = flowers_transform_augmented(x)
-    x = x / 255.0
 
-    return x
+    if num_augs == 1:
+        return fungi_transform_augmented(x)
+    return [fungi_transform_augmented(x) for _ in range(num_augs)]
 
 
 TOTAL_CLASSES = 1394
@@ -128,7 +128,7 @@ class FungiDatasetUnsup(dataset.Dataset):
         for label, file_path in enumerate(sampled_file_paths):
             # get a class's examples and sample from them
            
-            images = [load_image(file_path) for _ in range(self._num_support + self._num_query)]
+            images = load_image(file_path, num_augs = self._num_support + self._num_query)
 
             # split sampled examples into support and query
             images_support.extend(images[:self._num_support])

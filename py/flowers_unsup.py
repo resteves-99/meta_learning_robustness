@@ -22,7 +22,7 @@ flowers_transform_augmented = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-def load_image(file_path):
+def load_image(file_path, num_augs=1):
     """Loads and transforms an Fungi image.
 
     Args:
@@ -37,10 +37,11 @@ def load_image(file_path):
     x = torch.tensor(x)
     x = x.transpose(2, 0)
     x = x.type(torch.float)
-    x = flowers_transform_augmented(x)
     # x = x / 255.0
 
-    return x
+    if num_augs == 1:
+        return flowers_transform_augmented(x)
+    return [flowers_transform_augmented(x) for _ in range(num_augs)]
 
 TOTAL_CLASSES = 102
 TOTAL_SAMPLES = 8189
@@ -120,7 +121,7 @@ class FlowersDatasetUnsup(dataset.Dataset):
 
         for label, file_path in enumerate(sampled_file_paths):
             # get a sample augment it num_query + num_support times
-            images = [load_image(file_path) for _ in range(self._num_support + self._num_query)]
+            images = load_image(file_path, num_augs = self._num_support + self._num_query)
 
             # split sampled examples into support and query
             images_support.extend(images[:self._num_support])
