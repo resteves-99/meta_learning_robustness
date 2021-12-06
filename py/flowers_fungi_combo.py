@@ -4,6 +4,7 @@ import glob
 import pdb
 from math import floor, ceil
 import random
+from torch.utils.data import dataset
 from fungi import FungiDataset
 from flowers import FlowersDataset
 from flowers_unsup import FlowersDatasetUnsup
