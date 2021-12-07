@@ -18,7 +18,7 @@ class FlowersFungiUnsupDataset(dataset.Dataset):
         super().__init__()
         
         self.threshold = 0.5
-        self.flowers = FlowersDataset(num_support, num_query)
+        self.flowers = FlowersDataset(1, num_query)
         self.fungi_unsup = FungiDatasetUnsup(num_support, num_query)
 
     def __getitem__(self, class_idxs):
@@ -36,7 +36,7 @@ class FungiFlowersUnsupDataset(dataset.Dataset):
         
         self.threshold = 0.5
         self.flowers_unsup = FlowersDatasetUnsup(num_support, num_query)
-        self.fungi = FungiDataset(num_support, num_query)
+        self.fungi = FungiDataset(1, 5)
 
     def __getitem__(self, class_idxs):
 
